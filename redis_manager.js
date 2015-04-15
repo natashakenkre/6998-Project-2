@@ -30,8 +30,8 @@ exports.cacheResource = function(etag,resource) {
 //returns etag associated with the url if it exists
 // if it does not exist, generate a new etag
 exports.requestWithUrl = function (req, res, next) {
-    console.log('etag1');
-    console.log(req.headers);
+    //console.log('etag1');
+    //console.log(req.headers);
     var url = req.originalUrl;
     client.exists(url, function(err, reply) {
         obj = {};
