@@ -1,9 +1,7 @@
-var http = require('http');
 var dao = require('./apis_manager_dao');
-var querystring = require('querystring');
 var request = require('request');
 
-function options(host, path, method, id, query, fields) {
+function options(host, path, method, query, fields) {
     var constructed_path = path;
 
     if (fields != null) {
@@ -15,12 +13,58 @@ function options(host, path, method, id, query, fields) {
     }
     
     var fin =  {
-        uri : host+'/'+constructed_path,
+        uri : 'http://'+host+'/'+constructed_path,
         method: method,
         headers: {
             'Content-Type': 'application/json'
         },
         json: true
+    }
+    console.log(fin);
+
+    return fin;
+}
+
+function DELETEoptions(host, path, id) {
+    var constructed_path = path + '/' + id;
+
+    var fin =  {
+        uri : 'http://'+host+'/'+constructed_path,
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        json: true
+    }
+    console.log(fin);
+
+    return fin;
+}
+
+function POSToptions(host, path, data) {
+    var fin =  {
+        uri : 'http://'+host+'/'+path,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        json: true,
+        body: data
+    }
+    console.log(fin);
+
+    return fin;
+}
+
+function PUToptions(host, path, id, data) {
+    var fin =  {
+        uri : 'http://'+host+'/'+path+'/'+id,
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        json: true,
+        body: data
     }
     console.log(fin);
 
@@ -43,10 +87,8 @@ exports.getJSON = function(options, onResult) {
 exports.postJSON = function(options, data, onResult)
 {
     console.log(data);
-    var test_options = options;
-    test_options['body'] = data;
     
-    request(test_options, function(error, response, body) {
+    request(options, function(error, response, body) {
         if (error) {
             console.log(error)
         }
