@@ -114,60 +114,63 @@ exports.deleteJSON = function(options, itemId, onResult)
 
 module.exports = {
     initialize: function (app) {
-        var managed_apis = dao.get_apis();
-        var index;
+        dao.get_apis(function (res) {
 
-        for (index in managed_apis) {
-            var api = managed_apis[index];
-            console.log(api);
-            app.get('/' + api.id + '/:path(*)', function (req, res) {
-                console.log(req)
-                exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.query.fields),
-                    function (statusCode, result) {
-                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
-                        res.statusCode = statusCode;
-                        res.send(result);
-                    });
-            });
+            var managed_apis = res;
+            var index;
 
-            app.get('/' + api.id + '/:path(*)&fields=:fields' , function (req, res) {
-                exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.params.fields),
-                    function (statusCode, result) {
-                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
-                        res.statusCode = statusCode;
-                        res.send(result);
-                    });
-            });
+            for (index in managed_apis) {
+                var api = managed_apis[index];
+                console.log(api);
+                app.get('/' + api.id + '/:path(*)', function (req, res) {
+                    console.log(req)
+                    exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.query.fields),
+                        function (statusCode, result) {
+                            console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
+                            res.statusCode = statusCode;
+                            res.send(result);
+                        });
+                });
 
-            app.put('/' + api.id + '/:path/:id', function (req, res) {
-                exports.postJSON(PUToptions(api.url, req.params.path, req.params.id, req.body),
-                    req.body,
-                    function (statusCode, result) {
-                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
-                        res.statusCode = statusCode;
-                        res.send(result);
-                    });
-            });
+                app.get('/' + api.id + '/:path(*)&fields=:fields' , function (req, res) {
+                    exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.params.fields),
+                        function (statusCode, result) {
+                            console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
+                            res.statusCode = statusCode;
+                            res.send(result);
+                        });
+                });
 
-            app.post('/' + api.id + '/:path', function (req, res) {
-                exports.postJSON(POSToptions(api.url, req.params.path, req.body),
-                    req.body,
-                    function (statusCode, result) {
-                        res.statusCode = statusCode;
-                        res.send(result);
-                    });
-            });
+                app.put('/' + api.id + '/:path/:id', function (req, res) {
+                    exports.postJSON(PUToptions(api.url, req.params.path, req.params.id, req.body),
+                        req.body,
+                        function (statusCode, result) {
+                            console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
+                            res.statusCode = statusCode;
+                            res.send(result);
+                        });
+                });
 
-            app.delete('/' + api.id +'/:path/:id', function (req, res) {
-                console.log(req);
-                exports.deleteJSON(DELETEoptions(api.url, req.params.path, req.params.id),
-                    '',
-                    function (statusCode, result) {
-                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
-                        res.statusCode = statusCode;
-                        res.send(result);
-                    });
-            });
-        }
+                app.post('/' + api.id + '/:path', function (req, res) {
+                    exports.postJSON(POSToptions(api.url, req.params.path, req.body),
+                        req.body,
+                        function (statusCode, result) {
+                            res.statusCode = statusCode;
+                            res.send(result);
+                        });
+                });
+
+                app.delete('/' + api.id +'/:path/:id', function (req, res) {
+                    console.log(req);
+                    exports.deleteJSON(DELETEoptions(api.url, req.params.path, req.params.id),
+                        '',
+                        function (statusCode, result) {
+                            console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
+                            res.statusCode = statusCode;
+                            res.send(result);
+                        });
+                });
+            }
+        });
     }
 }
