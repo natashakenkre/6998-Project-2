@@ -1,5 +1,53 @@
 var dao = require('./apis_manager_dao');
 var request = require('request');
+var cacher = require('./redis_manager.js');
+
+//redis callbacks
+var etagCheck = function (req, res, next) {
+    //console.log('etag1');
+    cacher.requestWithUrl(req.originalUrl, etagCheckCB);
+    res.send('hi');
+    //next();
+};
+
+var etagCheckCache = function (req, res, next) {
+    if (req.cached ==true) {
+        console.log('theres a cache');
+        //console.log(req);
+        cacher.returnResource(req,res,next);
+    } else {
+        console.log('no cache');
+        next();
+    }
+    //next();
+};
+
+var etagCheckCB = function(req, res) {
+    var obj = {}
+    obj['etag'] = res[0];
+    obj['resource'] = res[1];
+    if (obj.resource ===null) {
+        req.etagged = false;
+        var reso='resource';
+
+        cacher.cacheResource(obj.etag, reso);
+    } else {
+        req.etagobj = obj;
+        console.log(obj)
+        //res.send(obj.resource);
+        console.log('found in redis');
+    }
+
+};
+
+var etagSet = function(req,res, next) {
+    app.set('etag', function (body,encoding) {
+        return req.etagobj.etag;});
+    console.log('etag set');
+    next();
+};
+
+
 
 function GEToptions(host, path, query, fields) {
     var constructed_path = path;
@@ -20,7 +68,7 @@ function GEToptions(host, path, query, fields) {
         },
         json: true
     }
-    console.log(fin);
+    //console.log(fin);
 
     return fin;
 }
@@ -36,7 +84,7 @@ function DELETEoptions(host, path, id) {
         },
         json: true
     }
-    console.log(fin);
+    //console.log(fin);
 
     return fin;
 }
@@ -51,7 +99,7 @@ function POSToptions(host, path, data) {
         json: true,
         body: data
     }
-    console.log(fin);
+    //console.log(fin);
 
     return fin;
 }
@@ -66,7 +114,7 @@ function PUToptions(host, path, id, data) {
         json: true,
         body: data
     }
-    console.log(fin);
+    //console.log(fin);
 
     return fin;
 }
@@ -77,7 +125,7 @@ exports.getJSON = function(options, onResult) {
             throw(error)
         }
         if (!error && response.statusCode==200) {
-            console.log(body)
+            //console.log(body)
             onResult(response.statusCode, body)
         }
     });
@@ -85,14 +133,14 @@ exports.getJSON = function(options, onResult) {
 
 exports.postJSON = function(options, data, onResult)
 {
-    console.log(data);
+    //console.log(data);
 
     request(options, function(error, response, body) {
         if (error) {
             console.log(error)
         }
         if (!error) {
-            console.log(body);
+            //console.log(body);
             onResult(response.statusCode, body);
         }
     });
@@ -106,7 +154,7 @@ exports.deleteJSON = function(options, itemId, onResult)
             throw(error)
         }
         if (!error) {
-            console.log(body);
+            //console.log(body);
             onResult(response.statusCode, body);
         }
     });
@@ -121,31 +169,38 @@ module.exports = {
 
             for (index in managed_apis) {
                 var api = managed_apis[index];
-                app.get('/' + api.id + '/:path(*)', function (req, res) {
-                    console.log(req)
+                app.get('/' + api.id + '/:path(*)', [cacher.requestWithUrlEtag, cacher.requestWithUrl, etagCheckCache], function (req, res) {
+                    console.log(req.headers)
                     exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.query.fields),
                         function (statusCode, result) {
                             console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
                             res.statusCode = statusCode;
+                            cacher.cacheResource(req.etagobj.etag,result);
+                            app.set('etag', function (body,encoding) {
+                                return req.etagobj.etag;});
                             res.send(result);
                         });
                 });
 
-                app.get('/' + api.id + '/:path(*)&fields=:fields' , function (req, res) {
+                app.get('/' + api.id + '/:path(*)&fields=:fields', [cacher.requestWithUrlTag, cacher.requestWithUrl, etagCheckCache], function (req, res) {
                     exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.params.fields),
                         function (statusCode, result) {
                             console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
                             res.statusCode = statusCode;
+                            cacher.cacheResource(req.etagobj.etag,result);
+                            app.set('etag', function (body,encoding) {
+                                return req.etagobj.etag;});
                             res.send(result);
                         });
                 });
 
-                app.put('/' + api.id + '/:path/:id', function (req, res) {
+                app.put('/' + api.id + '/:path/:id', [cacher.genEtag], function (req, res) {
                     exports.postJSON(PUToptions(api.url, req.params.path, req.params.id, req.body),
                         req.body,
                         function (statusCode, result) {
                             console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
                             res.statusCode = statusCode;
+                            cacher.cacheResource(req.etagobj.etag,result);
                             res.send(result);
                         });
                 });
@@ -160,7 +215,7 @@ module.exports = {
                 });
 
                 app.delete('/' + api.id +'/:path/:id', function (req, res) {
-                    console.log(req);
+                    //console.log(req);
                     exports.deleteJSON(DELETEoptions(api.url, req.params.path, req.params.id),
                         '',
                         function (statusCode, result) {
