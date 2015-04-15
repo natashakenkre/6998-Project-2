@@ -49,20 +49,24 @@ module.exports = {
         });
     },
 
-    get_apis : function() {
-        return [new api.API(1, "customer", "theabsinthemind.herokuapp.com")];
+    get_apis : function(callback) {
+//return [new api.API(1, "customer", "theabsinthemind.herokuapp.com")];
 
         connection.query("SELECT * FROM api_manager", function(err, rows, fields) {
             if (err) {
+                console.log('error');
                 throw err;
             }
 
-            var api_list = ["oi"];
+            var api_list = [];
+            //console.log(rows);
             for (var i in rows) {
                 api_list.push(new api.API(rows[i].API_id, rows[i].API_name, rows[i].URL_skeleton));
             }
 
-            return api_list;
+            console.log(api_list);
+            callback(api_list);
+            //return api_list;
         });
     },
 
