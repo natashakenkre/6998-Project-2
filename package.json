@@ -4,6 +4,7 @@
   "description": "API Manager for COMS6998E",
   "main": "test_app.js",
   "dependencies": {
+    "body-parser": "^1.12.3",
     "express": "~4.12.3",
     "redis": "~0.12.1"
   },

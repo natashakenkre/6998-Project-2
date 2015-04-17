@@ -1,7 +1,10 @@
 var express = require('express');
 var http = require('http');
-var app = express();
+var bodyParser = require('body-parser');
+var apis_manager = require('./apis_manager');
 
+var app = express();
+app.use(bodyParser.json());
 
 var optionsGET = {
     host: 'theabsinthemind.herokuapp.com',
@@ -141,3 +144,5 @@ var server = app.listen(8000, function () {
     console.log('Example app listening at http://%s:%s', host, port);
 
 });
+
+apis_manager.initialize(app)
