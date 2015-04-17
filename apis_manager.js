@@ -1,3 +1,6 @@
+var dao = require('./apis_manager_dao');
+var api = require('./api');
+
 module.exports = {
     initialize : function(app) {
         app.post('/api_manager', function (req, res) {
@@ -10,9 +13,9 @@ module.exports = {
             var name = req.body.api_name;
             var url = req.body.api_url;
 
-            var new_api = new API(-1, name, url);
+            var new_api = new api.API(-1, name, url);
 
-            save_api(new_api);
+            dao.save_api(new_api);
 
             return res.json(new_api);
 
@@ -20,40 +23,21 @@ module.exports = {
 
         app.put('/api_manager/:api_id', function (req, res) {
             var id = req.params.api_id;
-            var api = load_api(id);
+            var api_obj = dao.load_api(id);
 
-            api.name = req.body.api_name || api.name;
-            api.url = req.body.api_url || api.url;
+            api_obj.name = req.body.api_name || api_obj.name;
+            api_obj.url = req.body.api_url || api_obj.url;
 
-            save_api(api);
+            dao.save_api(api_obj);
 
-            return res.json(api);
+            return res.json(api_obj);
         });
 
         app.delete('/api_manager/:api_id', function (req, res) {
             var id = req.params.api_id;
-            var api = delete_api(id);
+            var api_obj = dao.delete_api(id);
 
             return res.json("Deleted!");
         });
     }
-}
-
-function API(id, name, url) {
-    this.id = id;
-    this.name = name;
-    this.url = url;
-}
-
-function save_api(api) {
-    console.log("Saved");
-}
-
-function load_api(id) {
-    console.log("Loaded " + id);
-    return new API(id, "default_name", "default_url");
-}
-
-function delete_api(id) {
-    console.log("Deleted " + id);
 }
