@@ -1,35 +1,22 @@
 var http = require('http');
 var dao = require('./apis_manager_dao');
 
-var optionsGET = {
-    host: 'theabsinthemind.herokuapp.com',
-    path: '/countries',
-    method: 'GET',
-    headers: {
-        'Content-Type': 'application/json'
-    }
-};
+function options(host, path, method, id) {
+    var constructed_path = path;
 
-var optionsPOST = {
-    host: 'theabsinthemind.herokuapp.com',
-    path: '/countries',
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    }
-};
+    console.log(constructed_path);
 
-var optionsDELETE = {
-    host: 'theabsinthemind.herokuapp.com',
-    path: '/countries/13',
-    method: 'DELETE',
-    headers: {
-        'Content-Type': 'application/json'
+    return {
+        host : host,
+        path: constructed_path,
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        }
     }
-};
+}
 
-exports.getJSON = function(options, onResult)
-{
+exports.getJSON = function(options, onResult) {
     var req = http.request(options, function(res)
     {
         var output = '';
@@ -40,6 +27,7 @@ exports.getJSON = function(options, onResult)
         });
 
         res.on('end', function() {
+            console.log(output);
             var obj = JSON.parse(output);
             onResult(res.statusCode, obj);
         });
@@ -108,36 +96,34 @@ module.exports = {
         var index;
 
         for (index in managed_apis) {
-            console.log(managed_apis[index]);
+            var api = managed_apis[index];
+
+            app.get('/' + api.id + '/:path', function (req, res) {
+                exports.getJSON(options(api.url, req.params.path, 'GET', null),
+                    function (statusCode, result) {
+                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
+                        res.statusCode = statusCode;
+                        res.send(result);
+                    });
+            });
+
+            app.post('/' + api.id + '/:path', function (req, res) {
+                exports.postJSON(options(api.url, req.params.path, 'POST', null),
+                    data,
+                    function (statusCode, result) {
+                        res.statusCode = statusCode;
+                        res.send(result);
+                    });
+            });
+
+            app.delete('/' + api.id, function (req, res) {
+                exports.deleteJSON(options(api.url, '/countries', 'DELETE', 4),
+                    '',
+                    function (statusCode, result) {
+                        res.statusCode = statusCode;
+                        res.send(result);
+                    });
+            });
         }
-
-        app.get('/get', function (req, res) {
-            exports.getJSON(optionsGET,
-                function (statusCode, result) {
-                    console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
-                    res.statusCode = statusCode;
-                    res.send(result);
-                });
-        });
-
-        app.get('/post', function (req, res) {
-            exports.postJSON(optionsPOST,
-                data,
-                function (statusCode, result) {
-                    console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
-                    res.statusCode = statusCode;
-                    res.send(result);
-                });
-        });
-
-        app.get('/delete', function (req, res) {
-            exports.deleteJSON(optionsDELETE,
-                '',
-                function (statusCode, result) {
-                    console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
-                    res.statusCode = statusCode;
-                    res.send(result);
-                });
-        });
     }
 }

@@ -12,8 +12,8 @@ var connection = mysql.createConnection({
 module.exports = {
     save_api : function (api_obj) {
         var idless_api = {
-            api_name = api_obj.api_name,
-            api_url = api_obj.api_url
+            api_name : api_obj.api_name,
+            api_url : api_obj.api_url
         };
 
         connection.query("INSERT INTO api_manager SET ?", idless_api, function (err, res) {
@@ -35,7 +35,7 @@ module.exports = {
     },
 
     get_apis : function() {
-        return [new api.API(1, "customers_api", "theabsinthecostumer.herokuapp.com/")];
+        return [new api.API(1, "customers_api", "theabsinthemind.herokuapp.com")];
     },
 
     cleanup_api : function() {
