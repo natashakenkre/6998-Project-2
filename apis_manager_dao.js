@@ -20,22 +20,46 @@ module.exports = {
             if (err) {
                 console.log(err)
             } else {
+                console.log(res.insertId);
                 console.log("saved");
             }
         });
     },
 
     load_api : function (id) {
-        console.log("Loaded " + id);
-        return new api.API(id, "default_name", "default_url");
+
+        connection.query("SELECT * FROM api_manager WHERE API_id = ?", [id], function(err, rows, fields) {
+            if (err) throw err;
+
+            for (var i in rows) {
+                console.log(rows[i]);
+            }
+
+            console.log("Loaded " + id);
+            return new api.API(rows[0].API_id, rows[0].API_name, rows[0].URL_skeleton);
+        });
+
     },
 
     delete_api : function (id) {
-        console.log("Deleted " + id);
+        connection.query("DELETE FROM api_manager WHERE API_id = ?", [id], function(err, rows, fields) {
+            if (err) throw err;
+
+            console.log("Deleted " + id);
+        });
     },
 
     get_apis : function() {
-        return [new api.API(1, "customers_api", "theabsinthemind.herokuapp.com")];
+        connection.query("SELECT * FROM api_manager", function(err, rows, fields) {
+            if (err) throw err;
+
+            var api_list = [];
+            for (var i in rows) {
+                api_list.push(new api.API(rows[i].API_id, rows[i].API_name, rows[i].URL_skeleton));
+            }
+
+            return api_list;
+        });
     },
 
     cleanup_api : function() {
