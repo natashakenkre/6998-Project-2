@@ -41,9 +41,10 @@ module.exports = {
             return res.json("Deleted!");
         });
 
-        app.get('/api_manager', function (req, res) {
+        app.get('/api_manager/:api_id', function (req, res) {
+            var api_obj = dao.load_api(req.params.api_id)
             console.log('exploring');
-            return res.json('get test');
+            return res.json(api_obj);
         });
 
         app.get('/api_close', function (req, res) {
