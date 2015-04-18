@@ -1,11 +1,17 @@
 var http = require('http');
 var dao = require('./apis_manager_dao');
 
-function options(host, path, method, id) {
+function options(host, path, method, id, query, fields) {
     var constructed_path = path;
 
-    console.log(constructed_path);
+    if (fields != null) {
+        constructed_path += "&fields=" + fields;
+    }
 
+    if (query != null) {
+        constructed_path += "?q=" + query;
+    }
+    
     return {
         host : host,
         path: constructed_path,
@@ -99,7 +105,16 @@ module.exports = {
             var api = managed_apis[index];
 
             app.get('/' + api.id + '/:path', function (req, res) {
-                exports.getJSON(options(api.url, req.params.path, 'GET', null),
+                exports.getJSON(options(api.url, req.params.path, 'GET', null, req.query.q, req.query.fields),
+                    function (statusCode, result) {
+                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
+                        res.statusCode = statusCode;
+                        res.send(result);
+                    });
+            });
+
+            app.get('/' + api.id + '/:path&fields=:fields' , function (req, res) {
+                exports.getJSON(options(api.url, req.params.path, 'GET', null, req.query.q, req.params.fields),
                     function (statusCode, result) {
                         console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
                         res.statusCode = statusCode;
