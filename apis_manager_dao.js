@@ -12,11 +12,11 @@ var connection = mysql.createConnection({
 module.exports = {
     save_api : function (api_obj) {
         var idless_api = {
-            api_name = api_obj.api_name,
-            api_url = api_obj.api_url
+            API_name : api_obj.api_name,
+            URL_skeleton : api_obj.api_url
         };
 
-        connection.query("INSERT INTO api_manager SET ?", idless_api, function (err, res) {
+        connection.query("INSERT INTO api_manager SET ?", {API_name : "'+api_obj.api_name+'", URL_skeleton : "'+api_obj.api_url+'"}, function (err, res) {
             if (err) {
                 console.log(err)
             } else {
