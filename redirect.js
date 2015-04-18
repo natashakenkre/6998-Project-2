@@ -1,5 +1,6 @@
 var http = require('http');
 var dao = require('./apis_manager_dao');
+var querystring = require('querystring');
 
 function options(host, path, method, id, query, fields) {
     var constructed_path = path;
@@ -33,7 +34,6 @@ exports.getJSON = function(options, onResult) {
         });
 
         res.on('end', function() {
-            console.log(output);
             var obj = JSON.parse(output);
             onResult(res.statusCode, obj);
         });
@@ -48,6 +48,7 @@ exports.getJSON = function(options, onResult) {
 
 exports.postJSON = function(options, data, onResult)
 {
+    console.log(data);
     var req = http.request(options, function(res)
     {
         var output = '';
@@ -58,6 +59,7 @@ exports.postJSON = function(options, data, onResult)
         });
 
         res.on('end', function() {
+            console.log(output);
             var obj = JSON.parse(output);
             onResult(res.statusCode, obj);
         });
@@ -68,6 +70,9 @@ exports.postJSON = function(options, data, onResult)
     });
 
     req.write(JSON.stringify(data));
+
+    console.log(req);
+
     req.end();
 };
 
@@ -123,8 +128,8 @@ module.exports = {
             });
 
             app.post('/' + api.id + '/:path', function (req, res) {
-                exports.postJSON(options(api.url, req.params.path, 'POST', null),
-                    data,
+                exports.postJSON(options(api.url, req.params.path, 'POST'),
+                    req.body,
                     function (statusCode, result) {
                         res.statusCode = statusCode;
                         res.send(result);

@@ -50,10 +50,14 @@ module.exports = {
     },
 
     get_apis : function() {
-        connection.query("SELECT * FROM api_manager", function(err, rows, fields) {
-            if (err) throw err;
+        return [new api.API(1, "customer", "theabsinthemind.herokuapp.com")];
 
-            var api_list = [];
+        connection.query("SELECT * FROM api_manager", function(err, rows, fields) {
+            if (err) {
+                throw err;
+            }
+
+            var api_list = ["oi"];
             for (var i in rows) {
                 api_list.push(new api.API(rows[i].API_id, rows[i].API_name, rows[i].URL_skeleton));
             }
