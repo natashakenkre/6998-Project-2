@@ -12,6 +12,10 @@ module.exports = {
 
     delete_api : function (id) {
         console.log("Deleted " + id);
+    },
+
+    get_apis : function() {
+        return [new api.API(1, "customers_api", "theabsinthecostumer.herokuapp.com/")];
     }
 }
 
