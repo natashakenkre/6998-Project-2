@@ -177,10 +177,11 @@ module.exports = {
                     });
             });
 
-            app.delete('/' + api.id, function (req, res) {
-                exports.deleteJSON(options(api.url, req.params.path),
+            app.delete('/' + api.id + '/:path/:id', function (req, res) {
+                exports.deleteJSON(DELETEoptions(api.url, req.params.path + '/' + req.params.id),
                     '',
                     function (statusCode, result) {
+                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
                         res.statusCode = statusCode;
                         res.send(result);
                     });
