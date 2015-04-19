@@ -1,8 +1,7 @@
 var http = require('http');
 var dao = require('./apis_manager_dao');
-var querystring = require('querystring');
 
-function options(host, path, method, id, query, fields) {
+function GEToptions(host, path, query, fields) {
     var constructed_path = path;
 
     if (fields != null) {
@@ -16,7 +15,32 @@ function options(host, path, method, id, query, fields) {
     return {
         host : host,
         path: constructed_path,
-        method: method,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }
+}
+
+function POSToptions(host, path, data) {
+    return {
+        host : host,
+        path: path,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Countent-Length': data.length
+        }
+    }
+}
+
+function DELETEoptions(host, path) {
+    console.log(path);
+
+    return {
+        host : host,
+        path: path,
+        method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -48,7 +72,6 @@ exports.getJSON = function(options, onResult) {
 
 exports.postJSON = function(options, data, onResult)
 {
-    console.log(data);
     var req = http.request(options, function(res)
     {
         var output = '';
@@ -69,9 +92,7 @@ exports.postJSON = function(options, data, onResult)
         console.log('error: ' + err.message);
     });
 
-    req.write(JSON.stringify(data));
-
-    console.log(req);
+    req.write(data);
 
     req.end();
 };
@@ -110,7 +131,7 @@ module.exports = {
             var api = managed_apis[index];
 
             app.get('/' + api.id + '/:path', function (req, res) {
-                exports.getJSON(options(api.url, req.params.path, 'GET', null, req.query.q, req.query.fields),
+                exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.query.fields),
                     function (statusCode, result) {
                         console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
                         res.statusCode = statusCode;
@@ -119,7 +140,25 @@ module.exports = {
             });
 
             app.get('/' + api.id + '/:path&fields=:fields' , function (req, res) {
-                exports.getJSON(options(api.url, req.params.path, 'GET', null, req.query.q, req.params.fields),
+                exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.params.fields),
+                    function (statusCode, result) {
+                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
+                        res.statusCode = statusCode;
+                        res.send(result);
+                    });
+            });
+
+            app.get('/' + api.id + '/:path/:id', function (req, res) {
+                exports.getJSON(GEToptions(api.url, req.params.path + '/' + req.params.id, req.query.q, req.query.fields),
+                    function (statusCode, result) {
+                        console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
+                        res.statusCode = statusCode;
+                        res.send(result);
+                    });
+            });
+
+            app.get('/' + api.id + '/:path/:id&fields=:fields' , function (req, res) {
+                exports.getJSON(GEToptions(api.url, req.params.path + '/' + req.params.id, req.query.q, req.params.fields),
                     function (statusCode, result) {
                         console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
                         res.statusCode = statusCode;
@@ -128,8 +167,10 @@ module.exports = {
             });
 
             app.post('/' + api.id + '/:path', function (req, res) {
-                exports.postJSON(options(api.url, req.params.path, 'POST'),
-                    req.body,
+                var data = JSON.stringify(req.body);
+
+                exports.postJSON(POSToptions(api.url, req.params.path, data),
+                    data,
                     function (statusCode, result) {
                         res.statusCode = statusCode;
                         res.send(result);
@@ -137,7 +178,7 @@ module.exports = {
             });
 
             app.delete('/' + api.id, function (req, res) {
-                exports.deleteJSON(options(api.url, '/countries', 'DELETE', 4),
+                exports.deleteJSON(options(api.url, req.params.path),
                     '',
                     function (statusCode, result) {
                         res.statusCode = statusCode;
