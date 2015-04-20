@@ -36,7 +36,6 @@ module.exports = {
 
     app.use(csrf());
 
-
     app.use(function(req, res, next){
       if(req.session && req.session.user){
         User.findOne({email: req.session.user.email}, function(err, user){
@@ -98,7 +97,7 @@ module.exports = {
       res.render('login.jade',{csrfToken: req.csrfToken()});
     });
 
-    app.post('/authentication/login', function(req, res){
+    app.post('/login', function(req, res){
       User.findOne({ email: req.body.email }, function(err,user) {
         if(!user) {
           res.render('login.jade', { error: 'invalid email or password.'});
