@@ -182,7 +182,7 @@ module.exports = {
                         });
                 });
 
-                app.get('/' + api.id + '/:path(*)&fields=:fields', [cacher.requestWithUrlTag, cacher.requestWithUrl, etagCheckCache], function (req, res) {
+                app.get('/' + api.id + '/:path(*)&fields=:fields', [cacher.requestWithUrlEtag, cacher.requestWithUrl, etagCheckCache], function (req, res) {
                     exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.params.fields),
                         function (statusCode, result) {
                             console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
