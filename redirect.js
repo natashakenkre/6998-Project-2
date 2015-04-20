@@ -1,6 +1,13 @@
 var dao = require('./apis_manager_dao');
 var request = require('request');
 var cacher = require('./redis_manager.js');
+var sqs_pusher = require('./pushToSQS.js');
+
+//sqs callbacks
+var sqsPush = function (req, res, next) {
+    sqs_pusher.sendMessage(req.route.stack[0].method + ' request ');
+    next();
+};
 
 //redis callbacks
 var etagCheck = function (req, res, next) {
@@ -33,7 +40,7 @@ var etagCheckCB = function(req, res) {
         cacher.cacheResource(obj.etag, reso);
     } else {
         req.etagobj = obj;
-        console.log(obj)
+        //console.log(obj)
         //res.send(obj.resource);
         console.log('found in redis');
     }
@@ -126,6 +133,7 @@ exports.getJSON = function(options, onResult) {
         }
         if (!error && response.statusCode==200) {
             //console.log(body)
+            sqs_pusher.sendMessage('code :' + response.statusCode + ' successful');
             onResult(response.statusCode, body)
         }
     });
@@ -141,6 +149,7 @@ exports.postJSON = function(options, data, onResult)
         }
         if (!error) {
             //console.log(body);
+            sqs_pusher.sendMessage('code :' + response.statusCode + ' successful');
             onResult(response.statusCode, body);
         }
     });
@@ -155,6 +164,7 @@ exports.deleteJSON = function(options, itemId, onResult)
         }
         if (!error) {
             //console.log(body);
+            sqs_pusher.sendMessage('code :' + response.statusCode + ' successful');
             onResult(response.statusCode, body);
         }
     });
@@ -169,8 +179,8 @@ module.exports = {
 
             for (index in managed_apis) {
                 var api = managed_apis[index];
-                app.get('/' + api.id + '/:path(*)', [cacher.requestWithUrlEtag, cacher.requestWithUrl, etagCheckCache], function (req, res) {
-                    console.log(req.headers)
+                app.get('/' + api.id + '/:path(*)', [sqsPush, cacher.requestWithUrlEtag, cacher.requestWithUrl, etagCheckCache], function (req, res) {
+                    //console.log(req.headers)
                     exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.query.fields),
                         function (statusCode, result) {
                             console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
@@ -195,6 +205,7 @@ module.exports = {
                 });
 
                 app.put('/' + api.id + '/:path/:id', [cacher.genEtag], function (req, res) {
+                    sqs_pusher.sendMessage('sending PUT request');
                     exports.postJSON(PUToptions(api.url, req.params.path, req.params.id, req.body),
                         req.body,
                         function (statusCode, result) {
@@ -206,6 +217,7 @@ module.exports = {
                 });
 
                 app.post('/' + api.id + '/:path', function (req, res) {
+                    sqs_pusher.sendMessage('sending POST request');
                     exports.postJSON(POSToptions(api.url, req.params.path, req.body),
                         req.body,
                         function (statusCode, result) {
@@ -215,6 +227,7 @@ module.exports = {
                 });
 
                 app.delete('/' + api.id +'/:path/:id', function (req, res) {
+                    sqs_pusher.sendMessage('sending DELETE request');
                     //console.log(req);
                     exports.deleteJSON(DELETEoptions(api.url, req.params.path, req.params.id),
                         '',
