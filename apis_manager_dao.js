@@ -1,13 +1,35 @@
 var api = require('./api');
 var mysql = require('mysql');
 
-var connection = mysql.createConnection({
+var connection_details = {
     host:   'us-cdbr-iron-east-02.cleardb.net',
     user:   'b31a1ff30df7f4',
     password:   '505ab38e',
     database:   'heroku_0f809a773200774',
     protocol:   'TCP'
-});
+};
+
+var connection;
+
+function handleDisconnect() {
+    connection = mysql.createConnection(connection_details);
+
+    connection.connect(function(err) {
+        if(err) {
+            console.log('error when connecting to db:', err);
+            setTimeout(handleDisconnect, 2000);
+        }
+    });
+
+    connection.on('error', function(err) {
+        console.log('db error', err);
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnect();
+        } else {
+            throw err;
+        }
+    });
+}
 
 module.exports = {
     save_api : function (api_obj) {
@@ -49,20 +71,19 @@ module.exports = {
         });
     },
 
-    get_apis : function() {
-        return [new api.API(1, "customer", "theabsinthemind.herokuapp.com")];
-
+    get_apis : function(callback) {
         connection.query("SELECT * FROM api_manager", function(err, rows, fields) {
             if (err) {
+                console.log('error');
                 throw err;
             }
 
-            var api_list = ["oi"];
+            var api_list = [];
             for (var i in rows) {
                 api_list.push(new api.API(rows[i].API_id, rows[i].API_name, rows[i].URL_skeleton));
             }
 
-            return api_list;
+            callback(api_list);
         });
     },
 
@@ -71,7 +92,7 @@ module.exports = {
     },
 
     startup_api : function() {
-        connection.connect();
+        handleDisconnect();
     }
 
 }

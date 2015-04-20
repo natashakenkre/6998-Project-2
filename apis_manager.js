@@ -48,7 +48,7 @@ module.exports = {
         });
 
         app.get('/api_close', function (req, res) {
-            dao.cleanup_api()
+            dao.cleanup_api();
         });
     }
 }

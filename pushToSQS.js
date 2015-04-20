@@ -12,6 +12,7 @@ var sqs = new AWS.SQS();
 // function to read messages off the queue created.
 // I am not sure we need this, but I am putting it here, just in case.
 // This function returns only one message for some reason, I am gonna check up with the TA about this.  
+// Use this only for testing. Not required for project.
 function readMessage() {
 	sqs.receiveMessage({
 		QueueUrl: sqsQueueUrl,
@@ -32,12 +33,9 @@ function readMessage() {
 readMessage();
 
 // function to push messages onto the queue. 
-function sendMessage(Message) {
+exports.sendMessage = function(Message) {
 	sqs.sendMessage({
 		QueueUrl: sqsQueueUrl,
 		MessageBody: Message
 	}, function(err, data) {});
-}
-
-// call this function by sending user query/good response from the REST API.
-sendMessage('Hello World My queue works!!');
+};
