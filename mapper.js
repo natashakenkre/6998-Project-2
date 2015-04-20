@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var apis_manager = require('./apis_manager');
 var redirect = require('./redirect');
+var authentication = require('./app')
 
 var app = express();
 app.use(bodyParser.json());
@@ -17,3 +18,4 @@ var server = app.listen(8000, function () {
 
 apis_manager.initialize(app);
 redirect.initialize(app);
+authentication.initialize(app);
