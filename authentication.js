@@ -97,7 +97,7 @@ module.exports = {
       res.render('login.jade',{csrfToken: req.csrfToken()});
     });
 
-    app.post('/login', function(req, res){
+    app.post('/authentication/login', function(req, res){
       User.findOne({ email: req.body.email }, function(err,user) {
         if(!user) {
           res.render('login.jade', { error: 'invalid email or password.'});
