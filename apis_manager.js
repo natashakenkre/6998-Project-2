@@ -3,13 +3,14 @@ var api = require('./api');
 
 module.exports = {
     initialize : function(app) {
+        dao.startup_api();
+
         app.post('/api_manager', function (req, res) {
             if(!req.body.hasOwnProperty('api_name') ||
                 !req.body.hasOwnProperty('api_url')) {
                 res.statusCode = 400;
                 return res.json('Error 400: Post syntax incorrect.');
             }
-
             var name = req.body.api_name;
             var url = req.body.api_url;
 
@@ -38,6 +39,16 @@ module.exports = {
             var api_obj = dao.delete_api(id);
 
             return res.json("Deleted!");
+        });
+
+        app.get('/api_manager/:api_id', function (req, res) {
+            var api_obj = dao.load_api(req.params.api_id)
+            console.log('exploring');
+            return res.json(api_obj);
+        });
+
+        app.get('/api_close', function (req, res) {
+            dao.cleanup_api()
         });
     }
 }
