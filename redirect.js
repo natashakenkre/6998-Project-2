@@ -121,7 +121,6 @@ module.exports = {
 
             for (index in managed_apis) {
                 var api = managed_apis[index];
-                console.log(api);
                 app.get('/' + api.id + '/:path(*)', function (req, res) {
                     console.log(req)
                     exports.getJSON(GEToptions(api.url, req.params.path, req.query.q, req.query.fields),
