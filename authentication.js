@@ -55,22 +55,22 @@ module.exports = {
 
     function requireLogin(req, res, next){
       if(!req.user){
-        res.redirect('/login');
+        res.redirect('/authentication/login');
       }else{
         next();
       }
     }
 
-    app.get('/', function(req , res){
+    app.get('/authentication', function(req , res){
       res.render('index.jade');
     });
 
-    app.get('/register', function(req, res){
+    app.get('/authentication/register', function(req, res){
       res.render('register.jade',{csrfToken: req.csrfToken()});
 
     });
 
-    app.post('/register', function(req, res){
+    app.post('/authentication/register', function(req, res){
       var hash = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10));
 
       var user = new User({
@@ -89,23 +89,23 @@ module.exports = {
         } else {
           console.log("entering loop");
           req.session.user = user;
-          res.redirect('/dashboard');
+          res.redirect('/authentication/dashboard');
         }
       });
     });
 
-    app.get('/login', function(req, res){
+    app.get('/authentication/login', function(req, res){
       res.render('login.jade',{csrfToken: req.csrfToken()});
     });
 
-    app.post('/login', function(req, res){
+    app.post('/authentication/login', function(req, res){
       User.findOne({ email: req.body.email }, function(err,user) {
         if(!user) {
           res.render('login.jade', { error: 'invalid email or password.'});
         } else {
           if(bcrypt.compareSync(req.body.password, user.password)) {
             req.session.user = user;
-            res.redirect('/dashboard');
+            res.redirect('/authentication/dashboard');
           } else {
             res.render('login.jade', { error: 'Invalid email or password.'});
           }
@@ -113,13 +113,13 @@ module.exports = {
       });
     });
 
-    app.get('/dashboard', requireLogin, function(req,res){
+    app.get('/authentication/dashboard', requireLogin, function(req,res){
       res.render('dashboard.jade');
     });
 
-    app.get('/logout', function(req,res){
+    app.get('/authentication/logout', function(req,res){
       req.session.reset();
-      res.redirect('/');
+      res.redirect('/authentication');
 
     });
   }

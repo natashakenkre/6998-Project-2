@@ -2,7 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var apis_manager = require('./apis_manager');
 var redirect = require('./redirect');
-var authentication = require('./app')
+var authentication = require('./authentication')
 
 var app = express();
 app.use(bodyParser.json());
