@@ -1,6 +1,6 @@
 var AWS = require('aws-sdk'); 
 var util = require('util');
-var config = require('./config.json');
+var fs = require('fs');
 
 // configure AWS
 AWS.config.update({
@@ -10,8 +10,9 @@ AWS.config.update({
 var sns = new AWS.SNS();
 
 //Publishes Messages to the SQS Queue based on the Subscription created in create.js
-function publish(mesg) {
-  
+exports.publish = function(mesg) {
+  var config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+
   //Takes parameters based on the Config file
   var publishParams = { 
     TopicArn : config.TopicArn,
@@ -22,10 +23,5 @@ function publish(mesg) {
   sns.publish(publishParams, function(err, data) {
     console.log(data); //Displays the Request IDs and Message IDs for the message
   });
-}
+};
 
-//Allows you to send the actual message using the function defined above
-for (var i=0; i < 10; i++) //Modify message number here
-{
-  publish("message: " + i); //Modify message content here
-}

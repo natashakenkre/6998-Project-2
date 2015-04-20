@@ -1,0 +1,5 @@
+{
+    "TopicArn": "arn:aws:sns:us-east-1:336828499216:demo",
+    "QueueUrl": "https://sqs.us-east-1.amazonaws.com/336828499216/demo",
+    "QueueArn": "arn:aws:sqs:us-east-1:336828499216:demo"
+}
